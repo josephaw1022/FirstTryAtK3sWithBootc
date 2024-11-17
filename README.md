@@ -19,6 +19,7 @@ Here are some helpful resources to learn more about `bootc`:
 - [Bootc Examples (Fedora GitLab)](https://gitlab.com/fedora/bootc/examples)  
 - [Bootc Documentation](https://containers.github.io/bootc/)  
 - [Fedora Docs: Getting Started with Bootc](https://docs.fedoraproject.org/en-US/bootc/getting-started/)  
+- [Bootc Image Builder Documentation](https://github.com/osbuild/bootc-image-builder)  
 - [Bootc Discussions: Bootc This Week](https://discussion.fedoraproject.org/tag/bootc-initiative)  
 
-Feel free to explore these resources to expand your understanding of `bootc` and its potential!
+These resources are excellent starting points to explore `bootc` and its capabilities!
