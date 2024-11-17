@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  k3s:
+    build:
+      context: .
+      dockerfile: Containerfile
+    environment:
+      K3S_TOKEN: Abc123XyZ4567890
+    ports:
+      - "2379-2380:2379-2380"
+      - "6443:6443"
+      - "8472:8472/udp"
+      - "10250:10250"
+      - "51820:51820/udp"
+      - "51821:51821/udp"
+      - "5001:5001"
+    volumes:
+      - k3s-config:/etc/rancher/k3s
+    restart: unless-stopped
+    privileged: true
+
+volumes:
+  k3s-config:
