@@ -12,4 +12,13 @@ To build the container, run:
 podman-compose build
 ```
 
-Feel free to explore and adapt!
+## Learn More About `bootc`
+
+Here are some helpful resources to learn more about `bootc`:
+
+- [Bootc Examples (Fedora GitLab)](https://gitlab.com/fedora/bootc/examples)  
+- [Bootc Documentation](https://containers.github.io/bootc/)  
+- [Fedora Docs: Getting Started with Bootc](https://docs.fedoraproject.org/en-US/bootc/getting-started/)  
+- [Bootc Discussions: Bootc This Week](https://discussion.fedoraproject.org/tag/bootc-initiative)  
+
+Feel free to explore these resources to expand your understanding of `bootc` and its potential!
