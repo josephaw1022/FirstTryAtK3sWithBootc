@@ -1,0 +1,2 @@
+
+this file is here so that the build-disk-image-output dir is added to git
