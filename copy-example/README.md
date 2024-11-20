@@ -49,6 +49,10 @@ pip install podman-compose
    ```
    This will list all the tasks defined in the Taskfile.
 
+
+Before running any of the tasks. Make sure to update the config.json file to have the credentials and all that you want.
+
+
 ---
 
 ## Key Tasks
