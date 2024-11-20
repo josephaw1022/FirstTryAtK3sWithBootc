@@ -1,0 +1,14 @@
+{
+  "customizations": {
+    "user": [
+      {
+        "name": "jwhiteaker",
+        "password": "your-password",
+        "key": "your-public-ssh-key",
+        "groups": [
+          "wheel"
+        ]
+      }
+    ]
+  }
+}

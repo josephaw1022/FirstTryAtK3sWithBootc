@@ -1,0 +1,106 @@
+version: '3'
+
+tasks:
+  default:
+    desc: "Show available tasks"
+    cmds:
+    - task --list
+
+  delete-image:
+    desc: "Delete the k3s-master:latest image"
+    cmds:
+    - echo "Deleting the k3s-master:latest image..."
+    - podman rmi k3s-master:latest || echo "Image not found or already deleted."
+
+  build-image:
+    desc: Builds the k3s-master image
+    sources:
+    - ./*
+    cmds:
+    - echo "Building the image with podman..."
+    - podman-compose -f compose.yaml build
+
+  delete-and-build:
+    sources:
+    - ./*
+    desc: "Delete the image and rebuild it"
+    cmds:
+    - task: delete-image
+    - task: build-image
+
+  create-vm-image:
+    desc: Create a VM image from the built container
+    cmds:
+    - echo "Creating a VM image using podman..."
+    - podman run --rm --name k3s-master-bootc-image-builder --tty --privileged --security-opt label=type:unconfined_t -v ./build-disk-image-output:/output/ -v /var/lib/containers/storage:/var/lib/containers/storage -v ./config.json:/config.json:ro --label bootc.image.builder=true quay.io/centos-bootc/bootc-image-builder:latest localhost/k3s-master:latest --output /output/ --local --type vhd --target-arch amd64 --rootfs ext4
+
+  copy-vhd-file:
+    desc: Copy the VHD file to the specified destination
+    cmds:
+    - echo "Copying the VHD file to the destination..."
+    - powershell -Command "Copy-Item -Path '.\\build-disk-image-output\\vpc\\disk.vhd' -Destination 'C:\\ProgramData\\Microsoft\\Windows\\Virtual Hard Disks\\k3s-server.vhd' -Force"
+
+  create-hyperv-vm:
+    desc: Create a new Hyper-V virtual machine
+    cmds:
+    - echo "Creating a new Hyper-V virtual machine..."
+    - powershell -Command "New-VM -Name 'k3s-server' -MemoryStartupBytes 4096MB -BootDevice VHD -VHDPath 'C:\\ProgramData\\Microsoft\\Windows\\Virtual Hard Disks\\k3s-server.vhd' -Path 'C:\\ProgramData\\Microsoft\\Windows\\Virtual Hard Disks' -Generation 1 -Switch 'Default Switch'"
+
+  start-vm:
+    desc: Start the Hyper-V virtual machine
+    cmds:
+    - echo "Starting the virtual machine..."
+    - powershell -Command "Start-VM -Name 'k3s-server'"
+
+  stop-vm:
+    desc: Shut down the Hyper-V virtual machine
+    ignore_error: true
+    cmds:
+    - echo "Shutting down the virtual machine..."
+    - powershell -Command "Stop-VM -Name 'k3s-server' -Force"
+
+  delete-vm:
+    desc: Shut down and delete the Hyper-V virtual machine
+    ignore_error: true
+    cmds:
+    - echo "Shutting down the virtual machine if running..."
+    - powershell -Command "Stop-VM -Name 'k3s-server' -Force"
+    - echo "Deleting the virtual machine..."
+    - powershell -Command "Remove-VM -Name 'k3s-server' -Force"
+
+  delete-vhd:
+    desc: Delete the VHD file in the Hyper-V VHD directory and the output directory
+    cmds:
+    - echo "Deleting the VHD file in the Hyper-V directory..."
+    - powershell -Command "if (Test-Path 'C:\\ProgramData\\Microsoft\\Windows\\Virtual Hard Disks\\k3s-server.vhd') { Remove-Item -Path 'C:\\ProgramData\\Microsoft\\Windows\\Virtual Hard Disks\\k3s-server.vhd' -Force }"
+    - echo "Deleting the VHD file in the output directory..."
+    - powershell -Command "if (Test-Path '.\\build-disk-image-output\\vpc') { Remove-Item -Path '.\\build-disk-image-output\\*' -Force }"
+
+  full-e2e:
+    desc: "Delete the virtual harddisk, delete the bootc image, build the bootc image, create the VM VHD file from bootc image, copy the VHD file, create the Hyper-V VM, and start the VM"
+    cmds:
+    - task: full-shutdown
+    - task: full-start
+
+  open-hyperv-manager:
+    desc: Open Hyper-V Manager
+    cmds:
+    - echo "Opening Hyper-V Manager..."
+    - powershell -Command "Start-Process -FilePath 'virtmgmt.msc'"
+
+  full-shutdown:
+    desc: "Shut down the VM and delete the VM and VHD"
+    cmds:
+    - task: stop-vm
+    - task: delete-vm
+    - task: delete-vhd
+    - task: delete-image
+
+  full-start:
+    desc: "Creates the container image, creates the VM image, copies the VHD file, creates the VM, and starts the VM"
+    cmds:
+    - task: build-image
+    - task: create-vm-image
+    - task: copy-vhd-file
+    - task: create-hyperv-vm
+    - task: start-vm

@@ -1,0 +1,91 @@
+# **Description:**
+# > IMPORTANT NOTE: This is BOOTC. This is meant for bootable container applications. See: https://github.com/containers/podman-desktop-extension-bootc
+#
+# This Containerfile creates a k3s master on AMD64 using CentOS Stream 9. So you can run a k8s server on boot.
+#
+# In my setup, I have networking done on the ROUTER side where it will automatically assign an IP address based on the MAC.
+# It is ideal to take note of this IP address as it will be needed for the nodes to join the cluster.
+#
+# **PRIVATE REGISTRY:** 
+# If you want to pull from a private registry. Uncomment the "COPY auth.json /etc/ostree/auth.json" line and add your auth.json file.
+# this auth.json file is typically found in ~/.config/containers/auth.json for podman users.
+
+# **Expanding your rootfs:**
+# * If you want your OS to expand it's rootfs automatically, ENABLE THIS `# RUN systemctl enable bootc-generic-growpart.service` from the Containerfile.
+# * This is disabled by default as it can be dangerous if you are not using a VM or a disk that can be expanded.
+# * This is good for situations like cloud providers, usb sticks, etc.
+# 
+# **GPU:**
+# * Want GPU? Change the FROM to `git.k8s.land/cdrage/bootc-nvidia-base-centos` / see `bootc-nvidia-base-centos` folder for more details.
+# * GPU drivers will be built + loaded on each boot.
+# * This README is outside of the scope of **how** to use GPU with k3s, but view the k3s advanced docs for more information: https://docs.k3s.io/advanced#nvidia-container-runtime-support read it thoroughly as you WILL need nvidia-device-plugin installed and modified to ensure it has runtimeClassName set.
+# 
+# Notes:
+# * The default user is root, and the ssh key is placed in /usr/ssh/root.keys this is enabled so we can scp / ssh and get the kubeconfig file (/etc/rancher/k3s/k3s.yaml)
+# * k3s is loaded with NO INGRESS / Traefik as I prefer using nginx-ingress. See the systemd k3s.service file for more details.
+# * k3s is loaded with NO LOADBALANCER. I use metallb locally, and I have added --disable=servicelb to the systemd service file
+#
+# Arguments are required in order to build this image with both your k3s K3S_TOKEN and your SSH public key. To do this, you must have the following (you can pass in this via --build-arg foo=bar on the CLI):
+# * HOSTNAME=k8smaster
+# * K3S_TOKEN=MySuperSecretK3sToken
+# * SSH_PUBLIC_KEY=MySSHPublicKeyNOTThePrivateKey
+# * K8S_VERSION=1.29.4
+
+# **Running:**
+# 1. Create disk image using the above extension
+# 2. Boot OS
+# 3. See that it creates the k3s server on boot
+# 4. To test the k8s server, you can retrieve the kubeconfig file from /etc/rancher/k3s/k3s.yaml from within the server (scp, ssh, etc.)
+# 5. Then use `kubectl` to interact with the server
+
+#! Use the below base image if you want to use GPU (you'll have to built it yourself FYI!)
+#! FROM ghcr.io/cdrage/bootc-nvidia-base-centos
+#! Or other base images such as rhel9
+#! FROM registry.redhat.io/rhel9/rhel-bootc:9.4
+#! We use Fedora 40 as we find it the most stable for Kubernetes
+FROM quay.io/fedora/fedora-bootc:40
+
+
+
+
+#! ARGUMENTS
+#! Intentionally left blank so users know to pass them in... the build will fail if they don't.
+ARG HOSTNAME
+ARG K3S_TOKEN
+ARG SSH_PUBLIC_KEY
+ARG K8S_VERSION=1.30.1
+
+#! Copy over all usr files
+COPY usr/ /usr/
+
+#! Set hostname
+#! Hostname does NOT work due to: https://gitlab.com/fedora/bootc/tracker/-/issues/25
+#! Instead there is a oneshot systemd service that sets the hostname on boot
+RUN echo "HOSTNAME=${HOSTNAME}" > /etc/systemd/system/hostname.service.env
+
+#! UNCOMMENT if you want to add auth.json for pulling images from a private registry for bootc
+# COPY auth.json /etc/ostree/auth.json
+
+#! Install AMD64 k3s
+RUN curl -Lo /usr/local/bin/k3s https://github.com/k3s-io/k3s/releases/download/v${K8S_VERSION}%2Bk3s1/k3s; chmod a+x /usr/local/bin/k3s
+RUN echo "K3S_TOKEN=${K3S_TOKEN}" > /etc/systemd/system/k3s.service.env
+
+#! Install AMD64 kubectl for internal testing
+RUN curl -Lo /usr/local/bin/kubectl https://dl.k8s.io/release/v${K8S_VERSION}/bin/linux/amd64/kubectl; chmod a+x /usr/local/bin/kubectl
+
+#! Add the SSH key from SSH_PUBLIC_KEY so we can actually get the kubeconfig file
+RUN set -eu; mkdir -p /usr/ssh && \
+  echo 'AuthorizedKeysFile /usr/ssh/%u.keys .ssh/authorized_keys .ssh/authorized_keys2' >> /etc/ssh/sshd_config.d/30-auth-system.conf && \
+  echo ${SSH_PUBLIC_KEY} > /usr/ssh/root.keys && chmod 0600 /usr/ssh/root.keys
+
+#! Enable all the services we will be using
+RUN chmod 0644 /usr/lib/systemd/system/k3s.service
+RUN chmod 0644 /usr/lib/systemd/system/hostname.service
+RUN systemctl enable k3s.service
+RUN systemctl enable hostname.service
+
+
+#! If you want your OS to expand it's rootfs automatically, ENABLE THIS.
+#! This is disabled by default as it can be dangerous if you are not using a VM or a disk that can be expanded.
+#! This is good for situations like cloud providers, usb sticks, etc.
+RUN systemctl enable bootc-generic-growpart.service
