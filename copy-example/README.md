@@ -3,6 +3,12 @@
 
 This subdirectory contains automation scripts using Taskfile to manage a Hyper-V virtual machine setup, including building container images, creating virtual hard disks (VHDs), and running end-to-end workflows.
 
+
+## Credits and Inspiration
+
+This setup was inspired by the excellent work in the [cdrage/containerfiles](https://github.com/cdrage/containerfiles) repository. Specifically, the directory [bootc-k3s-master-amd64](https://github.com/cdrage/containerfiles/tree/main/bootc-k3s-master-amd64) provided valuable insights into building and running K3s in a `bootc` container.
+
+
 ## Prerequisites
 
 To get started, ensure you are running **Windows 11 Pro** and have the following tools and features installed:
