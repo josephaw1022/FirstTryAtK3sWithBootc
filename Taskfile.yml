@@ -1,0 +1,4 @@
+version: '3'
+
+includes:
+  copy-example: ./copy-example/Taskfile.yaml
