@@ -76,7 +76,7 @@ task <task-name>
 ```
 
 For example:
-- To run the full end-to-end workflow:
+- To run the full end-to-end workflow and run full shutdown and full startup:
   ```powershell
   task full-e2e
   ```
@@ -84,4 +84,7 @@ For example:
   ```powershell
   task full-shutdown
   ```
-
+- To create everything:
+  ```powershell
+  task full-start
+  ```
