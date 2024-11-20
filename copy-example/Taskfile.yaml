@@ -14,15 +14,11 @@ tasks:
 
   build-image:
     desc: Builds the k3s-master image
-    sources:
-    - ./*
     cmds:
     - echo "Building the image with podman..."
     - podman-compose -f compose.yaml build
 
   delete-and-build:
-    sources:
-    - ./*
     desc: "Delete the image and rebuild it"
     cmds:
     - task: delete-image
