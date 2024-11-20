@@ -9,6 +9,7 @@ This repository is a simple attempt to get K3s running in a `bootc` container. W
 To build the container, run:
 
 ```bash
+cd first-try
 podman-compose build
 ```
 
