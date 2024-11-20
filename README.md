@@ -37,9 +37,6 @@ To see the incomplete setup:
    ```bash
    podman-compose build
    ```
-
-For reference, this setup was inspired by [cdrage's containerfile repository](https://github.com/cdrage/containerfiles), which includes examples for K3s in a `bootc` container.
-
 ---
 
 ## Learn More About `bootc`
