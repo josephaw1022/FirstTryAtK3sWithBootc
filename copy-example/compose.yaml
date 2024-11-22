@@ -9,7 +9,7 @@ services:
         K3S_TOKEN: "jDVP0xoUHfawYDyU"
         SSH_PUBLIC_KEY: "your public key"
         K8S_VERSION: "1.30.1"
-    image: k3s-master:latest
+    image: k3s-master-bootc:latest
     container_name: k3s-master
     privileged: true
     network_mode: "bridge"

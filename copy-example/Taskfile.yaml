@@ -7,10 +7,10 @@ tasks:
     - task --list
 
   delete-image:
-    desc: "Delete the k3s-master:latest image"
+    desc: "Delete the k3s-master-bootc:latest image"
     cmds:
-    - echo "Deleting the k3s-master:latest image..."
-    - podman rmi k3s-master:latest || echo "Image not found or already deleted."
+    - echo "Deleting the k3s-master-bootc:latest image..."
+    - podman rmi k3s-master-bootc:latest || echo "Image not found or already deleted."
 
   build-image:
     desc: Builds the k3s-master image
@@ -28,7 +28,7 @@ tasks:
     desc: Create a VM image from the built container
     cmds:
     - echo "Creating a VM image using podman..."
-    - podman run --rm --name k3s-master-bootc-image-builder --tty --privileged --security-opt label=type:unconfined_t -v ./build-disk-image-output:/output/ -v /var/lib/containers/storage:/var/lib/containers/storage -v ./config.json:/config.json:ro --label bootc.image.builder=true quay.io/centos-bootc/bootc-image-builder:latest localhost/k3s-master:latest --output /output/ --local --type vhd --target-arch amd64 --rootfs ext4
+    - podman run --rm --name k3s-master-bootc-image-builder --tty --privileged --security-opt label=type:unconfined_t -v ./build-disk-image-output:/output/ -v /var/lib/containers/storage:/var/lib/containers/storage -v ./config.json:/config.json:ro --label bootc.image.builder=true quay.io/centos-bootc/bootc-image-builder:latest localhost/k3s-master-bootc:latest --output /output/ --local --type vhd --target-arch amd64 --rootfs ext4
 
   copy-vhd-file:
     desc: Copy the VHD file to the specified destination
