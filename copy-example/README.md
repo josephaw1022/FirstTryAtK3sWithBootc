@@ -68,9 +68,9 @@ Follow these steps to set up your Hyper-V VM, retrieve the necessary files, and 
    - Note the IP address of the VM (it will typically start with `172.x.x.x` if running locally).
 
 5. **Exit Hyper-V and Retrieve the Kubeconfig File:**
-   - Use `scp` to copy the K3s `node-token` file from the VM to your local machine:
+   - Use `scp` to copy the K3s kubeconfig file from the VM to your local machine:
      ```bash
-     scp user@<VM_IP>:/var/lib/rancher/k3s/server/node-token .
+     scp user@<VM_IP>:/etc/rancher/k3s/k3s.yaml .
      ```
      Replace `<VM_IP>` with the IP address of the VM.
 
